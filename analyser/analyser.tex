@@ -1,0 +1,66 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\title{Analyse lexicale et syntaxique}
+\begin{document}
+\maketitle
+Dans la partie analyser il s’agit du module « Analyseur », qui contient  des informations sur la grammaire, le parseur Minijaja et des utilitaires qui facilite la  gestion du langage qui vont être plus détaillé prochainement.
+ 
+Alors, premièrement, nous nous familiarisons avec des sous-parties (fichiers) intéressantes de l’analyseur et nous nous concentrons les principaux choix de réalisation. Ensuite la discussion porte sur des traitements des  erreurs (des exceptions). Nous finissons par des tests réalisés.
+
+\section{La grammaire et parseur MiniJaja}
+Le fichier contient la grammaire MiniJaja décrit dans le langage JJTree . Ensuite à partir du fichier MiniJajaGrammar.jjt le parseur du Minijaja (MiniJajaGrammar.java), les nœuds arbres syntaxique abstraits (AST) et un visiteur de la grammaire sont génères à l’aide de compilateur javacc/jjtree.
+
+Nous avons choisi d’utiliser  les compilateurs javacc et jjtree qui permet de générer le parseur à partir de grammaire donné, car écrire notre propre parseur est plus complexe et plus couteux en temps. Alors la grammaire donnée à l’entrée aux compilateurs est sous forme BNF et en LL(1) (grammaire non-récursive gauche et non-ambigüe). Pour rendre la grammaire MiniJaja proposé dans le support du cours de Compilation en LL(1) nous avons utilisé les propriétés du langage Jjtree. 
+
+Prenons l’exemple de déclaration de variable et méthode :
+
+decl$\,\to\,$var  |  methode
+
+var$\,\to\,$typemeth ident vexp | typemeth ident [ exp ] |final type ident vexp
+
+methode$\,\to\,$typemeth ident (entêtes) { vars instrs }
+
+Il faut noter que "typemeth ident" rend la grammaire ambiguë. Pour résoudre ce problème dans les paramètres de jjtree c'est possible de mettre lookhead = 3, dans ce cas  avant prendre la décision pour la nœud déclaration pareurs analyse trois tokens qui suits d’abord. Mais nous avons décider de rendre la grammaire en LL(1). Alors le problème mentionné dessus est résolu à la manière suivante : 
+ 
+\lstset{language=Java}
+\begin{lstlisting}
+void Declaration() #void: 
+{}
+{
+  Constant()
+| MethodType() Identifier() (Method() | Variable())
+
+}
+void Method() #void: 
+{}
+{
+   <OPEN_PARENTHESIS> Parameters() <CLOSE_PARENTHESIS>
+  <OPEN_CURLY_BRACKET> Variables() Instructions()  <CLOSE_CURLY_BRACKET> #Method(5)
+}  
+\end{lstlisting}
+
+Remarques :
+Le noeud AST \#void ne sont pas généré
+
+Le noeud Method a 5 enfants, il va chercher 5 dernière nœud avant l’appele de \#Method(5). Alors c'est Instructions, Variables, Parametres, Identifier, MethodType
+
+\section{Visiteurs de la grammaire de Minijaja }
+Une classe MiniJajaGrammarVisitor.java est un visiteur de l’arbre syntaxique de MiniJaja généré. Deux visiteurs qui hérite de ce visiteur ont été développes afin de réduire le code de certaine implémentations de visiteur. Par exemple, classe privée RevokeVisitor de la classe MiniJajaCompiler a surchargé 4 méthodes de DefaultMiniJajaGrammarVisitor, pourtant la visiteur de MiniJaja contient 44 méthodes à surchargés.     
+
+\section{Traitement des erreurs  }
+\section{Jeu de test}
+Pour tester les cas nominaux de la grammaire nous avons écrit la classe de test MiniJajaGrammarTest. Pour cela nous avons implémenter MiniJajaGrammarVisitor. Le test de grammaire est effectué à la manière suivante : 
+
+1. Nous avons code source MiniJaja syntaxiquement correct, cela veut dire que parseur ne leve pas une exception
+
+2. On parse le code source à l'aide de MiniJajaGrammar.java et on obtient l'arbre syntaxique. 
+
+3. Notre visiteur parcours chaque nœud de notre arbre et construit au fur à mesure un rendu. 
+
+4. Pour déterminer que le test passe nous vérifions que code source MiniJaja donné à l'entrée du visiteur = rendu du visiteur.   
+
+\end{document}
