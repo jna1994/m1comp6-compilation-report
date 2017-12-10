@@ -1,0 +1,27 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\title{Interprétation de MiniJaja}
+\begin{document}
+\maketitle
+La partie Interprétation de MiniJaja couvre le module MiniJaja Interpreter.  MiniJajaInterpreter prend à l’entrée arbre syntaxique de MiniJaja, et dans chaque nœud d’AST effectue manipulation de la mémoire correspondant. 
+\section{La conception}
+Interprétation de MiniJaja utilise trois visiteurs qui héritent de DefaultMiniJajaGrammarVisitor : 
+
+•	MiniJajaInterpreter
+
+•	RevokeInterpreter
+
+•	ExpressionEvaluator
+
+Le visiteur MiniJajaInterpreter dédié aux déclarions (variable et méthode) alors que RevokeInterpreter au retrait. ExpressionEvaluator est utilisé pour évaluer des valeurs des expressions. 
+Au début de l’interprétation, nous avons une mémoire vide et dans chaque déclaration de MiniJaja pour on  ajoute des quadruplets (des informations sur déclaration) et on retire à la fin chaque quadruplet. Le visiteur ExpressionEvaluator permet savoir la nouvelle valeur des variables en utilisant mémoire car durant exécution des instructions ils peuvent changer. 
+Nous avons décidé de faire  3 visiteur différents pour les trois types de tâches différents afin de bien séparer la responsabilité de chaque visiteur. Les visituers RevokeInterpreter et ExpressionEvaluator sont privées pour le package, alors le seul visiteur disponible au public c’est MiniJajaInterpreter. 
+
+\section{Pas à pas}   
+\section{Erreurs}
+\section{Tests}
+\end{document}
