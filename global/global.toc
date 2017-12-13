@@ -1,0 +1,63 @@
+\select@language {french}
+\contentsline {chapter}{\numberline {}Remerciements}{3}
+\contentsline {paragraph}{}{3}
+\contentsline {chapter}{\numberline {}Introduction}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {chapter}{\numberline {1}Le projet de compilation}{5}
+\contentsline {section}{\numberline {1}Le sujet}{5}
+\contentsline {paragraph}{}{5}
+\contentsline {section}{\numberline {2}Le cahier des charges}{5}
+\contentsline {paragraph}{}{5}
+\contentsline {section}{\numberline {3}D\IeC {\'e}composition et architecture du logiciel}{5}
+\contentsline {paragraph}{}{5}
+\contentsline {chapter}{\numberline {2}D\IeC {\'e}veloppement}{6}
+\contentsline {paragraph}{}{6}
+\contentsline {section}{\numberline {1}Le contr\IeC {\^o}leur de type}{6}
+\contentsline {paragraph}{}{6}
+\contentsline {section}{\numberline {2}L'analyseur}{6}
+\contentsline {subsection}{\numberline {2.1}La grammaire et parseur MiniJaja}{6}
+\contentsline {subsection}{\numberline {2.2}Visiteurs de la grammaire de Minijaja }{8}
+\contentsline {subsection}{\numberline {2.3}Traitement des erreurs }{8}
+\contentsline {subsection}{\numberline {2.4}Jeu de test}{8}
+\contentsline {section}{\numberline {3}Le compilateur}{8}
+\contentsline {subsection}{\numberline {3.1}Conception et traitement des erreurs}{8}
+\contentsline {subsection}{\numberline {3.2}Tests}{9}
+\contentsline {section}{\numberline {4}L'interpr\IeC {\'e}teur MiniJaja}{9}
+\contentsline {paragraph}{}{9}
+\contentsline {section}{\numberline {5}La gestion de la m\IeC {\'e}moire}{9}
+\contentsline {subsection}{\numberline {5.1}Conception}{10}
+\contentsline {subsubsection}{\numberline {5.1.1}Le Dictionnaire de Donn\IeC {\'e}es}{10}
+\contentsline {subsubsection}{\numberline {5.1.2}Le tas}{12}
+\contentsline {subsubsection}{\numberline {5.1.3}La pile}{17}
+\contentsline {subsubsection}{\numberline {5.1.4}La M\IeC {\'e}moire}{17}
+\contentsline {subsection}{\numberline {5.2}Traitement des erreurs}{18}
+\contentsline {subsection}{\numberline {5.3}Choix de tests}{19}
+\contentsline {section}{\numberline {6}L'interpr\IeC {\'e}teur JajaCode}{20}
+\contentsline {paragraph}{}{20}
+\contentsline {section}{\numberline {7}L'Interface Homme-Machine}{20}
+\contentsline {paragraph}{}{20}
+\contentsline {subsection}{\numberline {7.1}Cahier des charges}{20}
+\contentsline {paragraph}{}{20}
+\contentsline {subsection}{\numberline {7.2}Choix de r\IeC {\'e}alisation}{20}
+\contentsline {paragraph}{}{20}
+\contentsline {subsection}{\numberline {7.3}Conception}{20}
+\contentsline {paragraph}{}{20}
+\contentsline {subsection}{\numberline {7.4}Impl\IeC {\'e}mentation}{20}
+\contentsline {paragraph}{}{20}
+\contentsline {subsection}{\numberline {7.5}Tests}{21}
+\contentsline {paragraph}{}{21}
+\contentsline {subsection}{\numberline {7.6}Bilan et r\IeC {\'e}sultats}{21}
+\contentsline {paragraph}{}{21}
+\contentsline {chapter}{\numberline {3}Bilan}{22}
+\contentsline {section}{\numberline {1}Technique et Fonctionnel}{22}
+\contentsline {paragraph}{}{22}
+\contentsline {section}{\numberline {2}Personnel}{22}
+\contentsline {chapter}{\numberline {}Conclusion}{23}
+\contentsline {chapter}{\numberline {A}Titre}{24}
+\contentsline {paragraph}{}{1}
+\contentsline {paragraph}{}{1}
+\contentsline {paragraph}{Mots cl\IeC {\'e}s}{1}
+\contentsline {paragraph}{Key words}{1}
