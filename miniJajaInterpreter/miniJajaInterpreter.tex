@@ -7,21 +7,30 @@
 \title{Interprétation de MiniJaja}
 \begin{document}
 \maketitle
-La partie Interprétation de MiniJaja couvre le module MiniJaja Interpreter.  MiniJajaInterpreter prend à l’entrée arbre syntaxique de MiniJaja, et dans chaque nœud d’AST effectue manipulation de la mémoire correspondant. 
-\section{La conception}
-Interprétation de MiniJaja utilise trois visiteurs qui héritent de DefaultMiniJajaGrammarVisitor : 
+Cette partie du rapport couvre le module MiniJajaInterpreter. L'interprétation du MiniJaja consiste à interpréter (ou exécuter) les instructions du code MiniJaja dans la mémoire. Nous prenons donc le code source MiniJaja en entrée, nous construisons ensuite l'arbre syntaxique correspondant et dans chaque nœud de cet AST nous implémentons les règles de l'interprétation. 
+C'est-à-dire que nous effectuons les manipulations de la mémoire correspondant. 
+Nous avons prévu deux politiques d'interprétation du MiniJaja : une interprétation \emph{atomique} du code source (utilisation nominale) et une interprétation \emph{pas-à-pas}(pour un mode debug par exemple). Le mode \emph{pas-à-pas} permettant de consulter l'état de la mémoire après l'exécution de chaque déclaration ou instruction. 
 
-•	MiniJajaInterpreter
+Dans cette partie nous évoquerons donc plus en détail l'implémentation de l'interprétation de MiniJaja et la technique choisie pour l'interprétation \emph{pas-à-pas}. 
+Ensuite nous développerons le sujet des jeux de tests. 
 
-•	RevokeInterpreter
+\section{Interprétation MiniJaja}
 
-•	ExpressionEvaluator
+L'interpréteur de MiniJaja est implémenté par la classe \emph{MiniJajaInterpreter}. C'est un visiteur (\emph{DefaultMiniJajaVisitor}) implémentant, pour chaque nœud, les différentes règles d'interprétation. On y retrouve donc :
 
-Le visiteur MiniJajaInterpreter dédié aux déclarions (variable et méthode) alors que RevokeInterpreter au retrait. ExpressionEvaluator est utilisé pour évaluer des valeurs des expressions. 
-Au début de l’interprétation, nous avons une mémoire vide et dans chaque déclaration de MiniJaja pour on  ajoute des quadruplets (des informations sur déclaration) et on retire à la fin chaque quadruplet. Le visiteur ExpressionEvaluator permet savoir la nouvelle valeur des variables en utilisant mémoire car durant exécution des instructions ils peuvent changer. 
-Nous avons décidé de faire  3 visiteur différents pour les trois types de tâches différents afin de bien séparer la responsabilité de chaque visiteur. Les visituers RevokeInterpreter et ExpressionEvaluator sont privées pour le package, alors le seul visiteur disponible au public c’est MiniJajaInterpreter. 
+\begin{itemize}
+\item la déclaration en mémoire des variables et méthodes,
+\item la mise à jour de la mémoire par les instructions,
+\item le retrait des déclarations.
+\end{itemize}
 
-\section{Pas à pas}   
-\section{Erreurs}
+Déclarations et instructions nécessitent l'évaluation d'expressions. C'est la classe \emph{ExpressionEvaluator} qui a cette responsabilité, en s'appuyant sur la mémoire pour connaitre les valeurs des différentes variables. 
+Le retrait des déclaration fait également l'objet d'une classe dédiée, \emph{RevokeInterpreter} qui implémente le visiteur par défaut de MiniJaja.
+Le choix de classes séparées permet de partager les responsabilités et rend le code plus compréhensible, plus facilement maintenable et donc plus facilement testable.
+
+\section{Politique d'exécution}  
+Comme mentionné ci-dessus nous avons implémenté deux politique de l'exécution :\emph{atomique} et \emph{pas-à-pas}. La classe MiniJajaInterpreter implémente l'interface \emph{Runnable} qui permet à cette classe s'exécute  dans un thread séparé. C'est le module \emph{interface-homme-machine} 
+L'interprétation MiniJaja s'exécute  
 \section{Tests}
+Il faut noter que l'interprétation de MiniJaja ne gère pas d'erreurs, car elle prévoit de recevoir en entrée un arbre syntaxe abstrait correctement typé. 
 \end{document}
