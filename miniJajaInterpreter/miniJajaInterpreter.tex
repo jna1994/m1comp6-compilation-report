@@ -4,6 +4,31 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage[T1]{fontenc}
+\usepackage{color}
+
+\definecolor{keyword_color}{rgb}{0.13,0.13,1}
+\definecolor{string_color}{rgb}{0,0.5,0}
+\definecolor{comment_color}{rgb}{0.46,0.45,0.48}
+
+\usepackage{listings}
+\lstset{language=Java,
+  basicstyle=\footnotesize\ttfamily,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{comment_color}\emph,
+  keywordstyle=\color{keyword_color},
+  stringstyle=\color{string_color},
+  frame=single,
+  literate=%
+         {à}{{\`a}}1
+         {é}{{\'e}}1
+         {è}{{\`e}}1
+}
+
+
 \title{Interprétation de MiniJaja}
 \begin{document}
 \maketitle
@@ -29,8 +54,117 @@ Le retrait des déclaration fait également l'objet d'une classe dédiée, \emph
 Le choix de classes séparées permet de partager les responsabilités et rend le code plus compréhensible, plus facilement maintenable et donc plus facilement testable.
 
 \section{Politique d'exécution}  
-Comme mentionné ci-dessus nous avons implémenté deux politique de l'exécution :\emph{atomique} et \emph{pas-à-pas}. La classe MiniJajaInterpreter implémente l'interface \emph{Runnable} qui permet à cette classe s'exécute  dans un thread séparé. C'est le module \emph{interface-homme-machine} 
-L'interprétation MiniJaja s'exécute  
+Comme mentionné ci-dessus nous avons implémenté deux politiques \linebreak d'exécution du MiniJaja :\emph{atomique} et \emph{pas-à-pas}. 
+Le première interprète le code de manière en une seule fois sans interruption (mode \emph{Run} d'un IDE par exemple).
+La seconde interprète le code pas à pas, en stoppant après chaque déclaration et chaque assignation (mode \emph{Debug} d'un IDE par exemple. Pour cela la classe \emph{MiniJajaInterpreter} implémente la classe native \emph{Runnable} et donne accès aux méthodes :
+\begin{itemize}
+\item run() pour lancer l'interprétation.
+\item resume() pour reprendre l'interprétation après une pause. La pause est gérée en privé dans la classe.
+\item terminate() pour reprendre et compléter l'interprétation sans interruption.
+\end{itemize}
+C'est le module dédié à l'IHM qui aura la responsabilité d'exécuter ces méthodes dans un \emph{Thread} dédié à l'interprétation.
+
+\section{Traitement des erreurs}
+Il faut noter que l'interprétation de MiniJaja ne gère pas d'erreurs, car elle prévoit de recevoir en entrée un arbre de syntaxe abstrait correctement typé.
+De plus, l'interprétation se base sur l'API de la mémoire qui elle gère les erreurs \emph{runtime} (par exemple le dépassement de tableau) par des exceptions qui sont affichées par l'interface graphique.
+
 \section{Tests}
-Il faut noter que l'interprétation de MiniJaja ne gère pas d'erreurs, car elle prévoit de recevoir en entrée un arbre syntaxe abstrait correctement typé. 
+Les tests unitaires de la classe \emph{MiniJajaInterpreterTest} valident l'interprétation en vérifiant les différents états de la mémoire.
+On retrouve des tests pour les deux politiques d'exécution citées plus haut. L'écriture des tests unitaires diffèrent ainsi :
+
+\subsection{Tests unitaires en mode \emph{atomique}}
+
+En mode \emph{atomique}, l'interprétation s'effectue en une fois sans interruption. Or en fin d'interprétation, la mémoire est vidée (suite eu retrait des déclarations). Pour constater les évolutions de la mémoire, on a décidé d'utiliser le librairie de test \emph{Mockito} qui permet, entre autres, de vérifier les appels de méthodes effectués pendant l'interprétation. La figure \ref{test_atomic} donne un exemple commenté de test unitaire d'interprétation d'une classe MiniJaja en mode \emph{atomique}.
+
+
+\begin{figure}[!ht]
+\begin{lstlisting}
+@Test
+public void interpretation_atomic() throws ParseException {
+    //on parse un exemple de classe
+    final ClassDeclaration declaration = parseClass(
+            "class C {" +
+            "   main {" +
+            "      int var = 2;" +
+            "      var = 3 + var;" +
+            '}' +
+            '}');
+    //on instrumente la mémoire avec Mockito.spy pour effectuer plus tard des vérifications sur les appels
+    final Memory memory = spy(new Memory());
+
+    //on lance l'interprétation en mode "atomique" (sans pause)
+    new MiniJajaInterpreter(memory, declaration, ATOMIC).run();
+
+    //on utilise une instance de la classe Mockito InOrder pour vérifier des appels dans l'ordre de leurs exécutions
+    final InOrder inOrder = inOrder(memory);
+
+    //on vérifie la déclaration mémoire de la classe C puis de la variable var (initialisée à 2)
+    inOrder.verify(memory).declVar(eq("C"), eq(UNDEFINED), eq(UNDEFINED_VALUE));
+    inOrder.verify(memory).declVar(eq("var"), eq(INTEGER), argThat(isInteger(2)));
+
+    //on vérifie ensuite l'affectation à 5 de la variable var (2+3)
+    inOrder.verify(memory).affecterVal(eq("var"), argThat(isInteger(5)));
+
+    //on vérifie en fin d'interprétation le retrait des déclarations (variable puis classe)
+    inOrder.verify(memory).retirerDecl(eq("var"));
+    inOrder.verify(memory).retirerDecl(eq("C"));
+
+    //enfin, on vérifie qu'il n'y a pas eu d'autres appels à la mémoire que ceux vérifiés ci-dessus
+    inOrder.verifyNoMoreInteractions();
+}
+\end{lstlisting}
+\caption{Exemple de test en mode \emph{atomique}}
+\label{test_atomic}
+\end{figure}
+
+
+\subsection{Tests unitaires en mode \emph{pas-à-pas}}
+
+Le mode \emph{pas à pas} est le mode utilisé par l'interface graphique du projet. Pour le tester, il faut donc isoler l'exécution de l'interprétation de l'exécution du reste test (les vérifications). 
+Le thread de test doit donc "attendre" l'exécution d'un pas d'interprétation avant de faire la vérification de la mémoire (mise en pause du thread par la méthode \emph{sleep}).
+Après chaque vérification de la mémoire, on reprend l'interprétation grâce à la méthode \emph{resume}.
+La figure \ref{test_stepByStep} donne un exemple commenté de test unitaire d'interprétation d'une classe MiniJaja en mode \emph{pas à pas} (basé sur la même classe MiniJaja que l'exmple de la figure \ref{test_atomic}).
+
+\begin{figure}[!ht]
+\begin{lstlisting}
+@Test
+public void interpretation_stepByStep() throws ParseException, InterruptedException {
+    //on parse un exemple de classe
+    final ClassDeclaration declaration = parseClass(
+            "class C {" +
+            "   main {" +
+            "      int var = 2;" +
+            "      var = 3 + var;" +
+            '}' +
+            '}');
+
+    //on crée un interprétateur avec une mémoire. L'exécution de l'interprétation se fait dans un Thread séparé
+    final Memory memory = new Memory();
+    final MiniJajaInterpreter interpreter = new MiniJajaInterpreter(memory, declaration, STEP_BY_STEP);
+    final Thread thread = new Thread(interpreter);
+    //on démarre l'interprétation
+    thread.start();
+
+    //on attend la première pause...
+    sleep(PAUSE_DURATION + 1);
+    //...et on vérifie que la variable prend la valeur 2
+    assertThat(memory.val("var"), isInteger(2));
+
+    //on reprend l'interprétation
+    interpreter.resume();
+    //on attend la seconde pause...
+    sleep(PAUSE_DURATION + 1);
+    //...et on vérifie que la variable prend la valeur 5
+    assertThat(memory.val("var"), isInteger(5));
+
+    //on termine l'interprétation
+    interpreter.terminate();
+    thread.join();
+    //...et on vérifie que la mémoire est vide
+    assertTrue(memory.getStack().isEmpty());
+}
+\end{lstlisting}
+\caption{Exemple de test en mode \emph{pas à pas}}
+\label{test_stepByStep}
+\end{figure}
 \end{document}
